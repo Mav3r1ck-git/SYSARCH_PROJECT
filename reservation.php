@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit_request"])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="dashboard-body">
+<body class="reservation-body">
     <div class="header-container">
         <h2><img src="ccs.png" alt="Logo" class="logo"> Sit-in Reservation</h2>
         <div class="nav-bar">

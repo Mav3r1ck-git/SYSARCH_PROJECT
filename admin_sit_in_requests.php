@@ -81,7 +81,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["logout_user"])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="sit-in-history-body">
+<body class="sit-in-request-body">
     <div class="header-container">
         <div class="logo-title">
             <img src="ccs.png" alt="Logo" class="logo">
@@ -92,12 +92,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["logout_user"])) {
             <a href="admin_announcements.php">Announcements</a>
             <a href="admin_sit_in_requests.php">Sit-in Requests</a>
             <a href="admin_view_sessions.php" class="active">Logged Out Sessions</a>
-            <a href="logout.php">Log-out</a>
+            <a href="admin_logout.php">Log-out</a>
         </div>
     </div>
 
     <div class="admin-sit-in-container">
-        <h3>All Sit-in Requests</h3>
+        <h3>Current Sit-in Requests</h3>
 
         <?php if (isset($_SESSION["message"])): ?>
             <div class="alert alert-success"><?php echo $_SESSION["message"]; unset($_SESSION["message"]); ?></div>

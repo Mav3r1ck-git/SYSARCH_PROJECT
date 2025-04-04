@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_feedback'])) {
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="dashboard-body">
+<body class="sit-in-history-body">
     <div class="header-container">
         <div class="logo-title">
             <h2><img src="ccs.png" alt="Logo" class="logo"> Sit-in History</h2>
@@ -82,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_feedback'])) {
         </div>
     </div>
 
-    <div class="container mt-4">
+    <div class="container mt-4" style="padding-bottom: 50px;">
         <h1 class="text-center">Sit-in History</h1>
 
         <?php if (isset($_SESSION['message'])): ?>
@@ -130,7 +130,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_feedback'])) {
         <!-- Past Sit-in History -->
         <div class="card">
             <div class="card-header bg-success text-white">
-                <h4>Past Sit-ins</h4>
+                <h4>Past Sit-in Sessions</h4>
             </div>
             <div class="card-body">
                 <?php if ($pastSessions->num_rows > 0): ?>

@@ -63,7 +63,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit_announcement"])
             <a href="admin_announcements.php">Announcements</a>
             <a href="admin_sit_in_requests.php">Sit-in Requests</a>
             <a href="admin_view_sessions.php" class="active">Logged Out Sessions</a>
-            <a href="logout.php">Log-out</a>
+            <a href="admin_logout.php">Log-out</a>
         </div>
     </div>
 

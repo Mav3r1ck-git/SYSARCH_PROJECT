@@ -8,23 +8,21 @@ if (isset($_GET['searchQuery'])) {
             FROM users 
             WHERE idNo = ? OR lastName = ? OR firstName = ? OR middleName = ?";
     
-    $stmt = mysqli_prepare($conn, $sql);
-    mysqli_stmt_bind_param($stmt, "ssss", $searchQuery, $searchQuery, $searchQuery, $searchQuery);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssss", $searchQuery, $searchQuery, $searchQuery, $searchQuery);
+    $stmt->execute();
+    $result = $stmt->get_result();
     
-    if ($row = mysqli_fetch_assoc($result)) {
-        $response = [
+    if ($row = $result->fetch_assoc()) {
+        echo json_encode([
             "success" => true,
+            "idNo" => $row["idNo"],
             "fullName" => "{$row['firstName']} " . substr($row['middleName'], 0, 1) . ". {$row['lastName']}",
             "course" => $row["course"],
             "yearLevel" => $row["yearLevel"],
             "email" => $row["emailAddress"]
-        ];
+        ]);
     } else {
-        $response = ["success" => false];
+        echo json_encode(["success" => false]);
     }
-
-    echo json_encode($response);
 }
-?>
