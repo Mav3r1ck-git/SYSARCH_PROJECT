@@ -52,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit_request"])) {
             <a href="editProfile.php">Edit Profile</a>
             <a href="sitInHistory.php">Sit-in History</a>
             <a href="reservation.php" class="active">Reservation</a>
+            <a href="user_resources.php">Resources</a>
             <a href="logout.php">Log-out</a>
         </div>
     </div>
@@ -63,10 +64,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit_request"])) {
                 <div class="mb-3">
                     <label for="sitin_lab" class="form-label">Select Lab:</label>
                     <select name="sitin_lab" class="form-control" required>
-                        <option value="Lab 1">Lab 1</option>
-                        <option value="Lab 2">Lab 2</option>
-                        <option value="Lab 3">Lab 3</option>
-                        <option value="Lab 4">Lab 4</option>
+                        <option value="" disabled selected>Select Lab</option>
+                        <option value="Lab 524">Lab 524</option>
+                        <option value="Lab 526">Lab 526</option>
+                        <option value="Lab 528">Lab 528</option>
+                        <option value="Lab 530">Lab 530</option>
+                        <option value="Lab 542">Lab 542</option>
+                        <option value="Lab 544">Lab 544</option>
+                        <option value="Lab 517">Lab 517</option>
                     </select>
                 </div>
                 <div class="mb-3">
@@ -80,9 +85,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit_request"])) {
                 <div class="mb-3">
                     <label for="sitin_purpose" class="form-label">Purpose:</label>
                     <select name="sitin_purpose" class="form-control" required onchange="toggleOtherPurpose(this)">
-                        <option value="Coding">Coding</option>
-                        <option value="Research">Research</option>
-                        <option value="Assignment">Assignment</option>
+                        <option value="" disabled selected>Select Purpose</option>
+                        <option value="C Programming">C Programming</option>
+                        <option value="Java Programming">Java Programming</option>
+                        <option value="System Integration & Architecture">System Integration & Architecture</option>
+                        <option value="Embeded System & IOT">Embeded System & IOT</option>
+                        <option value="Digital Logic & Design">Digital Logic & Design</option>
+                        <option value="Computer Application">Computer Application</option>
+                        <option value="Database">Database</option>
+                        <option value="Project Management">Project Management</option>
+                        <option value="Python Programming">Python Programming</option>
+                        <option value="Mobile Application">Mobile Application</option>
                         <option value="Others">Others</option>
                     </select>
                     <input type="text" name="sitin_other_purpose" class="form-control mt-2 d-none" placeholder="Specify if 'Others'">

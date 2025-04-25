@@ -55,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <a href="editProfile.php">Edit Profile</a>
             <a href="sitInHistory.php">Sit-in History</a>
             <a href="reservation.php">Reservation</a>
+            <a href="user_resources.php">Resources</a>
             <a href="login.php">Log-out</a>
         </div>
     </div>

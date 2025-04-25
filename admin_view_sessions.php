@@ -7,28 +7,43 @@ if (!isset($_SESSION["admin"])) {
     exit();
 }
 
-// Handle lab filter
 $selectedLab = $_GET['lab'] ?? 'All';
+$selectedPurpose = $_GET['purpose'] ?? 'All';
 
-$labFilterQuery = "";
+$filters = [];
 $params = [];
+$types = "";
 
+// Add lab filter
 if ($selectedLab !== 'All') {
-    $labFilterQuery = "WHERE v.sitin_lab = ?";
+    $filters[] = "v.sitin_lab = ?";
     $params[] = $selectedLab;
+    $types .= "s";
+}
+
+// Add purpose filter
+if ($selectedPurpose !== 'All') {
+    $filters[] = "v.sitin_purpose = ?";
+    $params[] = $selectedPurpose;
+    $types .= "s";
+}
+
+$whereClause = "";
+if (!empty($filters)) {
+    $whereClause = "WHERE " . implode(" AND ", $filters);
 }
 
 $query = "
     SELECT v.*, u.lastName, u.firstName, u.middleName 
     FROM viewsessions v
     JOIN users u ON v.idNo = u.idNo
-    $labFilterQuery
+    $whereClause
     ORDER BY v.session_id ASC
 ";
 
 $stmt = $conn->prepare($query);
 if (!empty($params)) {
-    $stmt->bind_param("s", ...$params);
+    $stmt->bind_param($types, ...$params);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -61,21 +76,41 @@ $result = $stmt->get_result();
     <div class="admin-sit-in-container">
         <h3>Logged Out Sessions</h3>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-                <label for="labFilter" class="form-label mb-0 me-2">View by Lab:</label>
-                <select id="labFilter" class="form-select d-inline-block w-auto" onchange="filterByLab()">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <label class="form-label mb-0 me-2">View by Lab:</label>
+                <select id="labFilter" class="form-select w-auto" onchange="applyFilters()">
                     <option value="All" <?= $selectedLab === 'All' ? 'selected' : '' ?>>All Labs</option>
-                    <option value="Lab 1" <?= $selectedLab === 'Lab 1' ? 'selected' : '' ?>>Lab 1</option>
-                    <option value="Lab 2" <?= $selectedLab === 'Lab 2' ? 'selected' : '' ?>>Lab 2</option>
-                    <option value="Lab 3" <?= $selectedLab === 'Lab 3' ? 'selected' : '' ?>>Lab 3</option>
-                    <option value="Lab 4" <?= $selectedLab === 'Lab 4' ? 'selected' : '' ?>>Lab 4</option>
+                    <option value="Lab 524" <?= $selectedLab === 'Lab 524' ? 'selected' : '' ?>>Lab 524</option>
+                    <option value="Lab 526" <?= $selectedLab === 'Lab 526' ? 'selected' : '' ?>>Lab 526</option>
+                    <option value="Lab 528" <?= $selectedLab === 'Lab 528' ? 'selected' : '' ?>>Lab 528</option>
+                    <option value="Lab 530" <?= $selectedLab === 'Lab 530' ? 'selected' : '' ?>>Lab 530</option>
+                    <option value="Lab 542" <?= $selectedLab === 'Lab 542' ? 'selected' : '' ?>>Lab 542</option>
+                    <option value="Lab 544" <?= $selectedLab === 'Lab 544' ? 'selected' : '' ?>>Lab 544</option>
+                    <option value="Lab 517" <?= $selectedLab === 'Lab 517' ? 'selected' : '' ?>>Lab 517</option>
+                </select>
+
+                <label class="form-label mb-0 ms-3 me-2">View by Purpose:</label>
+                <select id="purposeFilter" class="form-select w-auto" onchange="applyFilters()">
+                    <option value="All" <?= $selectedPurpose === 'All' ? 'selected' : '' ?>>All Purposes</option>
+                    <option value="C Programming" <?= $selectedPurpose === 'C Programming' ? 'selected' : '' ?>>C Programming</option>
+                    <option value="Java Programming" <?= $selectedPurpose === 'Java Programming' ? 'selected' : '' ?>>Java Programming</option>
+                    <option value="System Integration & Architecture" <?= $selectedPurpose === 'System Integration & Architecture' ? 'selected' : '' ?>>System Integration & Architecture</option>
+                    <option value="Embeded System & IOT" <?= $selectedPurpose === 'Embeded System & IOT' ? 'selected' : '' ?>>Embeded System & IOT</option>
+                    <option value="Digital Logic & Design" <?= $selectedPurpose === 'Digital Logic & Design' ? 'selected' : '' ?>>Digital Logic & Design</option>
+                    <option value="Computer Application" <?= $selectedPurpose === 'Computer Application' ? 'selected' : '' ?>>Computer Application</option>
+                    <option value="Database" <?= $selectedPurpose === 'Database' ? 'selected' : '' ?>>Database</option>
+                    <option value="Project Management" <?= $selectedPurpose === 'Project Management' ? 'selected' : '' ?>>Project Management</option>
+                    <option value="Python Programming" <?= $selectedPurpose === 'Python Programming' ? 'selected' : '' ?>>Python Programming</option>
+                    <option value="Mobile Application" <?= $selectedPurpose === 'Mobile Application' ? 'selected' : '' ?>>Mobile Application</option>
+                    <option value="Others" <?= $selectedPurpose === 'Others' ? 'selected' : '' ?>>Others</option>
                 </select>
             </div>
-            <div>
+
+            <div class="d-flex gap-2 mt-2 mt-md-0">
                 <button class="btn btn-primary" onclick="printImage()">Save as Image</button>
-                <a href="export_sessions.php?type=excel&lab=<?= urlencode($selectedLab) ?>" class="btn btn-success">Export to Excel</a>
-                <a href="export_sessions.php?type=csv&lab=<?= urlencode($selectedLab) ?>" class="btn btn-warning">Export to CSV</a>
+                <a href="export_sessions.php?type=excel&lab=<?= urlencode($selectedLab) ?>&purpose=<?= urlencode($selectedPurpose) ?>" class="btn btn-success">Export to Excel</a>
+                <a href="export_sessions.php?type=csv&lab=<?= urlencode($selectedLab) ?>&purpose=<?= urlencode($selectedPurpose) ?>" class="btn btn-warning">Export to CSV</a>
                 <button class="btn btn-dark" onclick="printTableOnly()">Print</button>
             </div>
         </div>
@@ -146,9 +181,18 @@ $result = $stmt->get_result();
                     <head>
                         <title>Print Table</title>
                         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+                        <style>
+                            body { font-family: Arial, sans-serif; padding: 20px; }
+                            .center-text { text-align: center; margin-bottom: 10px; }
+                        </style>
                     </head>
                     <body>
-                        <h3 class="text-center my-3">Logged Out Sessions</h3>
+                        <div class="center-text">
+                            <h3>University of Cebu-Main</h3>
+                            <h4>College of Computer Studies</h4>
+                            <h5>Computer Laboratory Sitin Monitoring</h5>
+                            <h5>System Report</h5>
+                        </div>
                         <table class="table table-bordered">${tableContent}</table>
                     </body>
                 </html>
@@ -159,9 +203,10 @@ $result = $stmt->get_result();
             newWin.close();
         }
 
-        function filterByLab() {
-            const selectedLab = document.getElementById("labFilter").value;
-            window.location.href = "admin_view_sessions.php?lab=" + encodeURIComponent(selectedLab);
+        function applyFilters() {
+            const lab = document.getElementById("labFilter").value;
+            const purpose = document.getElementById("purposeFilter").value;
+            window.location.href = `admin_view_sessions.php?lab=${encodeURIComponent(lab)}&purpose=${encodeURIComponent(purpose)}`;
         }
     </script>
 </body>

@@ -7,13 +7,29 @@ if (!isset($_GET['type']) || !in_array($_GET['type'], ['excel', 'csv'])) {
 
 $type = $_GET['type'];
 $selectedLab = $_GET['lab'] ?? 'All';
+$selectedPurpose = $_GET['purpose'] ?? 'All';
 
-$labFilter = "";
+$filters = [];
 $params = [];
+$types = "";
 
+// Apply lab filter
 if ($selectedLab !== 'All') {
-    $labFilter = "WHERE v.sitin_lab = ?";
+    $filters[] = "v.sitin_lab = ?";
     $params[] = $selectedLab;
+    $types .= "s";
+}
+
+// Apply purpose filter
+if ($selectedPurpose !== 'All') {
+    $filters[] = "v.sitin_purpose = ?";
+    $params[] = $selectedPurpose;
+    $types .= "s";
+}
+
+$whereClause = "";
+if (!empty($filters)) {
+    $whereClause = "WHERE " . implode(" AND ", $filters);
 }
 
 $query = "
@@ -22,18 +38,18 @@ $query = "
            v.logged_out_at, v.feedback
     FROM viewsessions v
     JOIN users u ON v.idNo = u.idNo
-    $labFilter
+    $whereClause
     ORDER BY v.session_id ASC
 ";
 
 $stmt = $conn->prepare($query);
 if (!empty($params)) {
-    $stmt->bind_param("s", ...$params);
+    $stmt->bind_param($types, ...$params);
 }
 $stmt->execute();
 $result = $stmt->get_result();
 
-$filename = "Logged_Out_Sessions_" . str_replace(" ", "_", $selectedLab);
+$filename = "Logged_Out_Sessions_" . str_replace(" ", "_", $selectedLab . "_" . $selectedPurpose);
 
 if ($type === 'excel') {
     header("Content-Type: application/vnd.ms-excel");
@@ -72,7 +88,7 @@ if ($type === 'excel') {
 
     echo "</table>";
 } else {
-    // CSV
+    // CSV export
     header("Content-Type: text/csv");
     header("Content-Disposition: attachment; filename=\"$filename.csv\"");
 
@@ -102,4 +118,4 @@ if ($type === 'excel') {
 
     fclose($output);
 }
-exit();
+exit;

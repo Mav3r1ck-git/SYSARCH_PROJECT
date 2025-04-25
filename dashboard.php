@@ -52,6 +52,7 @@ $announcementResult = $conn->query($announcementQuery);
             <a href="editProfile.php">Edit Profile</a>
             <a href="sitInHistory.php">Sit-in History</a>
             <a href="reservation.php">Reservation</a>
+            <a href="user_resources.php">Resources</a>
             <a href="login.php">Log-out</a>
         </div>
     </div>
@@ -59,7 +60,7 @@ $announcementResult = $conn->query($announcementQuery);
     <div class="container mt-4">
         <div class="row equal-height">
             <!-- Left Column (Profile) -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card p-3 h-100">
                     <h3><center>Profile</center></h3>
                     <center><img src="profilepicture.png" alt="Profile Picture" class="profile-img"></center>
@@ -73,7 +74,7 @@ $announcementResult = $conn->query($announcementQuery);
             </div>
 
             <!-- Middle Column (Announcements) -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card p-3 h-100">
                     <h3 class="text-center">Announcements</h3>
                     <div class="scroll-box">
@@ -90,8 +91,47 @@ $announcementResult = $conn->query($announcementQuery);
                 </div>
             </div>
 
+            <!-- Third Column (Leaderboard) -->
+            <div class="col-md-3">
+                <div class="card p-3 h-100">
+                    <h3 class="text-center">Leaderboard</h3>
+                    <div class="scroll-box">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Name</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $leaderboardQuery = "SELECT idNo, firstName, middleName, lastName, COALESCE(points, 0) as points 
+                                                   FROM users 
+                                                   ORDER BY points DESC, lastName ASC 
+                                                   LIMIT 10";
+                                $leaderboardResult = $conn->query($leaderboardQuery);
+                                $rank = 1;
+                                while ($row = $leaderboardResult->fetch_assoc()):
+                                    $fullName = htmlspecialchars("{$row['lastName']}, {$row['firstName']} " . substr($row['middleName'], 0, 1) . ".");
+                                ?>
+                                    <tr>
+                                        <td><?= $rank ?></td>
+                                        <td><?= $fullName ?></td>
+                                        <td><?= $row['points'] ?></td>
+                                    </tr>
+                                <?php 
+                                    $rank++;
+                                endwhile; 
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Right Column (Rules & Regulations) -->
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card p-3 h-100">
                     <h3 class="text-center">Rules & Regulations</h3>
                     <div class="scroll-box">
