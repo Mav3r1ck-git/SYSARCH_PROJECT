@@ -13,19 +13,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit_request"])) {
     $sitinDate = date('Y-m-d'); // Always use current date
     $sitinTime = date('H:i'); // Always use current time
     $sitinPurpose = $_POST["sitin_purpose"];
+    $pcNumber = $_POST["pc_number"];
 
     if ($sitinPurpose == "Others") {
         $sitinPurpose = $_POST["sitin_other_purpose"];
     }
 
-    if (!empty($studentId) && !empty($sitinLab) && !empty($sitinPurpose)) {
-        $stmt = $conn->prepare("INSERT INTO sit_in_requests (idNo, sitin_lab, sitin_date, sitin_time, sitin_purpose) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $studentId, $sitinLab, $sitinDate, $sitinTime, $sitinPurpose);
+    if (!empty($studentId) && !empty($sitinLab) && !empty($sitinPurpose) && !empty($pcNumber)) {
+        // Directly insert into current_sitins table since this is admin-created
+        $stmt = $conn->prepare("INSERT INTO current_sitins (idNo, sitin_lab, sitin_date, sitin_time, sitin_purpose, pc_number) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $studentId, $sitinLab, $sitinDate, $sitinTime, $sitinPurpose, $pcNumber);
         
         if ($stmt->execute()) {
-            $_SESSION["message"] = "Sit-in request submitted successfully!";
+            $_SESSION["message"] = "Sit-in created successfully!";
         } else {
-            $_SESSION["error"] = "Error submitting sit-in request.";
+            $_SESSION["error"] = "Error creating sit-in.";
         }
         
         $stmt->close();

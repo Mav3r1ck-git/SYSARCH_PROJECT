@@ -60,7 +60,7 @@ if (isset($_POST['update_student'])) {
     exit();
 }
 
-$result = $conn->query("SELECT idNo, firstName, middleName, lastName, course, yearLevel, sessions, COALESCE(points, 0) as points FROM users ORDER BY lastName ASC");
+$result = $conn->query("SELECT idNo, firstName, middleName, lastName, course, yearLevel, sessions, COALESCE(points, 0) as points, COALESCE(sitin_count, 0) as sitin_count FROM users ORDER BY lastName ASC");
 ?>
 
 <!DOCTYPE html>
@@ -95,6 +95,7 @@ $result = $conn->query("SELECT idNo, firstName, middleName, lastName, course, ye
                     <th>Year Level</th>
                     <th>Sessions</th>
                     <th>Points</th>
+                    <th>Sit-ins</th>
                     <th>
                         Action
                         <a href="?reset_all=1" class="btn btn-sm btn-danger ms-2" onclick="return confirm('Reset all sessions?')">Reset All</a>
@@ -110,11 +111,11 @@ $result = $conn->query("SELECT idNo, firstName, middleName, lastName, course, ye
                         <td><?= htmlspecialchars($row['yearLevel']) ?></td>
                         <td><?= htmlspecialchars($row['sessions']) ?></td>
                         <td><?= htmlspecialchars($row['points']) ?></td>
+                        <td><?= htmlspecialchars($row['sitin_count']) ?></td>
                         <td>
                             <a href="?reset_id=<?= $row['idNo'] ?>" class="btn btn-sm btn-outline-secondary">Reset</a>
                             <a href="?delete_id=<?= $row['idNo'] ?>" class="btn btn-sm btn-outline-danger">Delete</a>
                             <button class="btn btn-sm btn-outline-primary" onclick='openEditModal(<?= json_encode($row) ?>)'>Edit</button>
-                            <a href="?reward_id=<?= $row['idNo'] ?>" class="btn btn-sm btn-outline-success">Reward</a>
                         </td>
                     </tr>
                 <?php endwhile; ?>
@@ -142,7 +143,6 @@ $result = $conn->query("SELECT idNo, firstName, middleName, lastName, course, ye
                 <a href="#" id="btnEdit" class="btn btn-sm btn-outline-primary">Edit</a>
                 <a href="#" id="btnReset" class="btn btn-sm btn-outline-secondary">Reset</a>
                 <a href="#" id="btnDelete" class="btn btn-sm btn-outline-danger">Delete</a>
-                <a href="#" id="btnReward" class="btn btn-sm btn-outline-success">Reward</a>
                 <button type="button" id="btnSitIn" class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#sitInModal">Sit-in</button>
             </div>
         </div>
@@ -170,9 +170,12 @@ $result = $conn->query("SELECT idNo, firstName, middleName, lastName, course, ye
                     </thead>
                     <tbody>
                         <?php
-                        $leaderboardQuery = "SELECT idNo, firstName, middleName, lastName, course, yearLevel, COALESCE(points, 0) as points 
+                        $leaderboardQuery = "SELECT idNo, firstName, middleName, lastName, course, yearLevel, 
+                                           COALESCE(points, 0) as points, 
+                                           COALESCE(sitin_count, 0) as sitin_count,
+                                           (COALESCE(points, 0) + COALESCE(sitin_count, 0)) as total_score
                                            FROM users 
-                                           ORDER BY points DESC, lastName ASC";
+                                           ORDER BY total_score DESC, lastName ASC";
                         $leaderboardResult = $conn->query($leaderboardQuery);
                         $rank = 1;
                         while ($row = $leaderboardResult->fetch_assoc()):
@@ -183,7 +186,7 @@ $result = $conn->query("SELECT idNo, firstName, middleName, lastName, course, ye
                                 <td><?= $fullName ?></td>
                                 <td><?= htmlspecialchars($row['course']) ?></td>
                                 <td><?= htmlspecialchars($row['yearLevel']) ?></td>
-                                <td><?= $row['points'] ?></td>
+                                <td><?= $row['total_score'] ?></td>
                             </tr>
                         <?php 
                             $rank++;
@@ -225,8 +228,17 @@ $result = $conn->query("SELECT idNo, firstName, middleName, lastName, course, ye
                     </select>
                 </div>
                 <div class="mb-3">
+                    <label class="form-label">PC Number</label>
+                    <select name="pc_number" class="form-control" required>
+                        <option value="" disabled selected>Select PC</option>
+                        <?php for ($i = 1; $i <= 50; $i++): ?>
+                            <option value="PC<?= $i ?>">PC<?= $i ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+                <div class="mb-3">
                     <label class="form-label">Purpose</label>
-                    <select name="sitin_purpose" class="form-control" onchange="toggleOtherPurpose(this)" required>
+                    <select name="sitin_purpose" class="form-control" required onchange="toggleOtherPurpose(this)">
                         <option value="" disabled selected>Select Purpose</option>
                         <option value="C Programming">C Programming</option>
                         <option value="Java Programming">Java Programming</option>
@@ -242,13 +254,10 @@ $result = $conn->query("SELECT idNo, firstName, middleName, lastName, course, ye
                     </select>
                     <input type="text" name="sitin_other_purpose" class="form-control mt-2 d-none" placeholder="Specify if 'Others'">
                 </div>
-                <div class="alert alert-info">
-                    <strong>Current Date and Time:</strong><br>
-                    <?= date('F j, Y') ?> at <?= date('h:i A') ?>
-                </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" name="submit_request" class="btn btn-primary w-100">Submit Request</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" name="submit_request" class="btn btn-primary">Submit</button>
             </div>
         </form>
     </div>
@@ -319,7 +328,6 @@ document.getElementById("searchBtn").addEventListener("click", function () {
                 document.getElementById("s_email").textContent = data.email;
                 document.getElementById("btnReset").href = `?reset_id=${data.idNo}`;
                 document.getElementById("btnDelete").href = `?delete_id=${data.idNo}`;
-                document.getElementById("btnReward").href = `?reward_id=${data.idNo}`;
                 document.getElementById("sitInStudentId").value = data.idNo;
                 document.getElementById("btnEdit").onclick = function () {
                     openEditModal({
@@ -340,6 +348,14 @@ document.getElementById("searchBtn").addEventListener("click", function () {
         });
 });
 </script>
+
+<script>
+document.querySelector('select[name="sitin_purpose"]').addEventListener('change', function() {
+    const otherPurposeDiv = document.getElementById('otherPurposeDiv');
+    otherPurposeDiv.style.display = this.value === 'Others' ? 'block' : 'none';
+});
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

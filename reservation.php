@@ -15,14 +15,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit_request"])) {
     $sitinDate = $_POST["sitin_date"];
     $sitinTime = $_POST["sitin_time"];
     $sitinPurpose = $_POST["sitin_purpose"];
+    $pcNumber = $_POST["pc_number"];
 
     if ($sitinPurpose == "Others") {
         $sitinPurpose = $_POST["sitin_other_purpose"];
     }
 
-    if (!empty($sitinLab) && !empty($sitinDate) && !empty($sitinTime) && !empty($sitinPurpose)) {
-        $stmt = $conn->prepare("INSERT INTO sit_in_requests (idNo, sitin_lab, sitin_date, sitin_time, sitin_purpose) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $studentId, $sitinLab, $sitinDate, $sitinTime, $sitinPurpose);
+    if (!empty($sitinLab) && !empty($sitinDate) && !empty($sitinTime) && !empty($sitinPurpose) && !empty($pcNumber)) {
+        $stmt = $conn->prepare("INSERT INTO sit_in_requests (idNo, sitin_lab, sitin_date, sitin_time, sitin_purpose, pc_number) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $studentId, $sitinLab, $sitinDate, $sitinTime, $sitinPurpose, $pcNumber);
         $stmt->execute();
         $stmt->close();
         
@@ -72,6 +73,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["submit_request"])) {
                         <option value="Lab 542">Lab 542</option>
                         <option value="Lab 544">Lab 544</option>
                         <option value="Lab 517">Lab 517</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="pc_number" class="form-label">Select PC:</label>
+                    <select name="pc_number" class="form-control" required>
+                        <option value="" disabled selected>Select PC</option>
+                        <?php for ($i = 1; $i <= 50; $i++): ?>
+                            <option value="PC<?php echo $i; ?>">PC<?php echo $i; ?></option>
+                        <?php endfor; ?>
                     </select>
                 </div>
                 <div class="mb-3">

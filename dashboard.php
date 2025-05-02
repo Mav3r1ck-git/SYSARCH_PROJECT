@@ -106,9 +106,12 @@ $announcementResult = $conn->query($announcementQuery);
                             </thead>
                             <tbody>
                                 <?php
-                                $leaderboardQuery = "SELECT idNo, firstName, middleName, lastName, COALESCE(points, 0) as points 
+                                $leaderboardQuery = "SELECT idNo, firstName, middleName, lastName, 
+                                                   COALESCE(points, 0) as points, 
+                                                   COALESCE(sitin_count, 0) as sitin_count,
+                                                   (COALESCE(points, 0) + COALESCE(sitin_count, 0)) as total_score
                                                    FROM users 
-                                                   ORDER BY points DESC, lastName ASC 
+                                                   ORDER BY total_score DESC, lastName ASC 
                                                    LIMIT 10";
                                 $leaderboardResult = $conn->query($leaderboardQuery);
                                 $rank = 1;
@@ -118,7 +121,7 @@ $announcementResult = $conn->query($announcementQuery);
                                     <tr>
                                         <td><?= $rank ?></td>
                                         <td><?= $fullName ?></td>
-                                        <td><?= $row['points'] ?></td>
+                                        <td><?= $row['total_score'] ?></td>
                                     </tr>
                                 <?php 
                                     $rank++;
